@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Scavenger Hunt 🔢</title>
+  <style>
+    /* ══════════════════════════════════ RESET ══ */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ══════════════════════════════════ ANIMATIONS ══ */
+    @keyframes bounce {
+      0%,100% { transform: translateY(0) scale(1); }
+      40%     { transform: translateY(-10px) scale(1.04); }
+      70%     { transform: translateY(-4px)  scale(1.01); }
+    }
+    @keyframes wiggle {
+      0%,100% { transform: rotate(0deg); }
+      20%     { transform: rotate(-5deg); }
+      60%     { transform: rotate(5deg); }
+    }
+    @keyframes popIn {
+      0%   { transform: scale(0.72); opacity: 0; }
+      75%  { transform: scale(1.04); }
+      100% { transform: scale(1);    opacity: 1; }
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0) rotate(0deg); }
+      50%     { transform: translateY(-9px) rotate(3deg); }
+    }
+    @keyframes floatSlow {
+      0%,100% { transform: translateY(0); }
+      50%     { transform: translateY(-6px); }
+    }
+    @keyframes pulseDot {
+      0%,100% { transform: scale(1);   box-shadow: 0 0 0 0   rgba(0,0,0,0.3); }
+      50%     { transform: scale(1.35); box-shadow: 0 0 0 5px rgba(0,0,0,0); }
+    }
+    @keyframes rainbowBg {
+      0%   { background-position: 0%   50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0%   50%; }
+    }
+    @keyframes confettiFall {
+      0%   { transform: translateY(-10px) rotate(0deg);   opacity: 1; }
+      100% { transform: translateY(90px)  rotate(420deg); opacity: 0; }
+    }
+    @keyframes starPop {
+      0%   { transform: scale(0) rotate(-30deg); opacity: 0; }
+      60%  { transform: scale(1.3) rotate(10deg); opacity: 1; }
+      100% { transform: scale(1)   rotate(0deg);  opacity: 1; }
+    }
+    @keyframes cardPop {
+      0%   { transform: scale(0.94); opacity: 0; }
+      100% { transform: scale(1);    opacity: 1; }
+    }
+    @keyframes scoreFlash {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25%     { transform: translateX(-6px); }
+      75%     { transform: translateX(6px); }
+    }
+    /* Glow pulse — does NOT move the element so clicks always register */
+    @keyframes glowPulse {
+      0%,100% { box-shadow: 0 5px 0 #c94e10, 0 0 0 0   rgba(255,107,107,.55); }
+      55%     { box-shadow: 0 5px 0 #c94e10, 0 0 0 14px rgba(255,107,107,0); }
+    }
+
+    /* ══════════════════════════════════ ADMIN PAGE ══ */
+    #admin-page {
+      display: none; position: fixed; inset: 0; z-index: 9998;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    #admin-page.show { display: flex; }
+    .admin-card {
+      background: #fff; border-radius: 20px; padding: 36px 32px;
+      width: 100%; max-width: 480px;
+      box-shadow: 0 8px 40px rgba(0,0,0,.35);
+    }
+    .admin-card h2  { font-size: 22px; font-weight: 900; color: #1a1a2e; margin-bottom: 4px; }
+    .admin-card .admin-sub { font-size: 13px; color: #888; margin-bottom: 20px; font-weight: 600; }
+    .admin-input {
+      width: 100%; padding: 13px 16px; font-size: 15px; font-family: inherit;
+      font-weight: 700; border: 2px solid #e0e0e0; border-radius: 12px;
+      outline: none; transition: border-color .2s; margin-bottom: 12px; color: #1a1a1a;
+    }
+    .admin-input:focus { border-color: #6366F1; }
+    .admin-login-btn {
+      width: 100%; padding: 13px; font-size: 15px; font-weight: 900;
+      font-family: inherit; background: #1a1a2e; color: #fff;
+      border: none; border-radius: 12px; cursor: pointer; transition: background .2s;
+    }
+    .admin-login-btn:hover { background: #2d2d50; }
+    .admin-err { color: #e03; font-size: 13px; font-weight: 700; margin-top: 8px; display: none; }
+
+    /* visitor log */
+    .visitor-list    { margin-top: 22px; }
+    .visitor-list h3 { font-size: 12px; font-weight: 800; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    .visitor-item    { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #f6f8fa; border-radius: 10px; margin-bottom: 8px; }
+    .visitor-name    { font-size: 14px; font-weight: 800; color: #1a1a1a; }
+    .visitor-time    { font-size: 12px; color: #aaa; font-weight: 600; }
+    .visitor-empty   { text-align: center; color: #ccc; font-size: 14px; padding: 18px 0; font-weight: 700; }
+    .admin-clear-btn {
+      margin-top: 14px; width: 100%; padding: 11px; font-size: 13px;
+      font-family: inherit; font-weight: 700; background: #fde0d8;
+      color: #b71c1c; border: none; border-radius: 10px; cursor: pointer;
+    }
+    .admin-clear-btn:hover { background: #f5c6b8; }
+    .admin-back-btn  {
+      margin-top: 10px; width: 100%; padding: 11px; font-size: 13px;
+      font-family: inherit; font-weight: 700; background: transparent;
+      color: #aaa; border: 1.5px solid #e0e0e0; border-radius: 10px; cursor: pointer;
+    }
+    .admin-back-btn:hover { color: #666; }
+
+    /* admin link (small, unobtrusive) */
+    .admin-link { font-size: 12px; color: #ccc; cursor: pointer; text-decoration: underline; margin-top: 18px; display: inline-block; }
+    .admin-link:hover { color: #999; }
+
+    /* admin badge in header */
+    #admin-header-link {
+      position: absolute; top: 14px; left: 14px;
+      font-size: 12px; font-weight: 700; color: rgba(255,255,255,.7);
+      cursor: pointer; text-decoration: underline;
+    }
+    #admin-header-link:hover { color: #fff; }
+
+    /* ══════════════════════════════════ PASSWORD GATE ══ */
+    #pw-gate {
+      position: fixed; inset: 0; z-index: 9999;
+      background: linear-gradient(135deg,#FF6B6B,#FFD93D,#6BCFFF,#A78BFA,#FF6B6B);
+      background-size: 400% 400%;
+      animation: rainbowBg 8s ease infinite;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .pw-card {
+      background: #fff; border-radius: 28px; padding: 36px 32px 32px;
+      max-width: 420px; width: 100%; text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,.22);
+      animation: popIn .35s cubic-bezier(.34,1.56,.64,1);
+    }
+    .pw-emoji  { font-size: 56px; display: block; margin-bottom: 10px; animation: floatSlow 3s ease-in-out infinite; }
+    .pw-title  { font-size: 24px; font-weight: 900; color: #1a1a1a; margin-bottom: 6px; }
+    .pw-sub    { font-size: 14px; color: #888; font-weight: 600; margin-bottom: 22px; }
+    .pw-input  {
+      width: 100%; border: 3px solid #e0e0e0; border-radius: 14px;
+      padding: 14px 18px; font-size: 19px; font-family: inherit; font-weight: 800;
+      color: #1a1a1a; outline: none; text-align: center;
+      transition: border-color .2s; margin-bottom: 14px;
+    }
+    .pw-input:focus { border-color: #FFD93D; }
+    .pw-input.error { border-color: #FF6B6B; animation: shake .35s ease; }
+    .pw-btn {
+      width: 100%; padding: 15px; border-radius: 50px; border: none;
+      background: linear-gradient(135deg,#FF6B6B,#FFD93D);
+      color: #fff; font-size: 17px; font-weight: 900; cursor: pointer;
+      font-family: inherit; box-shadow: 0 5px 0 #c94e10;
+      transition: transform .12s, box-shadow .12s;
+    }
+    .pw-btn:hover  { transform: translateY(-2px); box-shadow: 0 7px 0 #c94e10; }
+    .pw-btn:active { transform: translateY(2px);  box-shadow: none; }
+    .pw-error {
+      font-size: 13px; font-weight: 700; color: #FF6B6B;
+      margin-top: 10px; min-height: 20px;
+    }
+    /* welcome name in header */
+    #welcome-name {
+      font-size: 13px; font-weight: 700; color: rgba(255,255,255,.92);
+      margin-top: 4px;
+    }
+
+    /* ══════════════════════════════════ BODY ══ */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      min-height: 100vh;
+      background-color: #FFF9F0;
+      background-image:
+        radial-gradient(circle, #FFD93D55 2.5px, transparent 2.5px),
+        radial-gradient(circle, #FF6B6B33 2px,   transparent 2px),
+        radial-gradient(circle, #6BCFFF33 2px,   transparent 2px);
+      background-size: 44px 44px, 70px 70px, 58px 58px;
+      background-position: 0 0, 22px 22px, 8px 40px;
+    }
+
+    /* ══════════════════════════════════ HEADER ══ */
+    #site-header {
+      background: linear-gradient(135deg,#FF6B6B,#FFD93D,#6BCFFF,#A78BFA,#FF6B6B);
+      background-size: 400% 400%;
+      animation: rainbowBg 8s ease infinite;
+      padding: 20px 20px 16px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header-deco {
+      position: absolute; border-radius: 50%; opacity: .22;
+      animation: floatSlow 4s ease-in-out infinite;
+    }
+    .header-title { font-size: 30px; font-weight: 900; color: #fff; letter-spacing:-.4px; text-shadow: 3px 3px 0 rgba(0,0,0,.12); }
+    .header-sub   { font-size: 13px; font-weight: 700; color: rgba(255,255,255,.92); margin-top: 5px; }
+
+    /* sound toggle */
+    #sound-btn {
+      position: absolute; top: 14px; right: 14px;
+      background: rgba(255,255,255,.25); border: none; border-radius: 50%;
+      width: 36px; height: 36px; cursor: pointer; font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s; color: #fff;
+    }
+    #sound-btn:hover { background: rgba(255,255,255,.42); }
+
+    /* ══════════════════════════════════ HOME ══ */
+    #home { padding: 28px 18px 44px; max-width: 1120px; margin: 0 auto; }
+
+    .home-intro { text-align: center; margin-bottom: 24px; }
+    .home-intro h2 { font-size: 22px; font-weight: 900; color: #333; }
+    .home-intro p  { font-size: 15px; color: #777; margin-top: 6px; font-weight: 500; }
+
+    /* progress bar */
+    .home-progress {
+      text-align: center; margin-bottom: 26px;
+    }
+    .home-progress-label { font-size: 13px; font-weight: 700; color: #888; margin-bottom: 8px; }
+    .home-progress-bar-wrap {
+      background: #e8e8e8; border-radius: 20px; height: 12px;
+      max-width: 360px; margin: 0 auto; overflow: hidden;
+    }
+    .home-progress-bar {
+      height: 100%; border-radius: 20px;
+      background: linear-gradient(90deg,#22C55E,#06B6D4);
+      transition: width .6s ease;
+    }
+
+    /* ══════════════════════════════════ GRID ══ */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    /* ══════════════════════════════════ CARD ══ */
+    .card {
+      border-radius: 22px; cursor: pointer; overflow: hidden;
+      box-shadow: 0 5px 0 rgba(0,0,0,.13);
+      transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .15s;
+      animation: cardPop .35s ease both;
+      border: none; outline: none; position: relative;
+    }
+    .card:hover  { transform: translateY(-6px) rotate(-1.5deg) scale(1.02); box-shadow: 0 12px 0 rgba(0,0,0,.14); }
+    .card:active { transform: translateY(1px) scale(.98); box-shadow: 0 2px 0 rgba(0,0,0,.13); }
+
+    .card-body { padding: 20px 18px 14px; }
+    .card-emoji {
+      font-size: 38px; display: block; margin-bottom: 10px;
+      animation: float 4s ease-in-out infinite; line-height: 1;
+    }
+    .card-num   { font-size: 11px; font-weight: 800; color: rgba(255,255,255,.72); text-transform: uppercase; letter-spacing: 1.2px; }
+    .card-title { font-size: 17px; font-weight: 900; color: #fff; margin: 4px 0 0; line-height: 1.25; text-shadow: 1px 1px 3px rgba(0,0,0,.12); }
+
+    .card-footer {
+      background: rgba(0,0,0,.13); padding: 10px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .badge     { font-size: 11px; font-weight: 800; padding: 4px 11px; border-radius: 20px; background: rgba(255,255,255,.92); text-transform: uppercase; letter-spacing: .3px; }
+    .card-age  { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.88); }
+
+    /* completion badge on card */
+    .card-done-badge {
+      position: absolute; top: 10px; right: 12px;
+      background: #fff; border-radius: 50%; width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; box-shadow: 0 2px 6px rgba(0,0,0,.15);
+      animation: starPop .4s ease;
+    }
+    .card-score-strip {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 5px;
+      background: rgba(255,255,255,.35);
+    }
+    .card-score-fill {
+      height: 100%; background: #fff; border-radius: 0 3px 3px 0;
+      transition: width .4s ease;
+    }
+
+    /* ══════════════════════════════════ OVERLAY ══ */
+    #overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(20,10,40,.58); z-index: 400;
+      overflow-y: auto; padding: 28px 14px 60px;
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    }
+    #overlay.show { display: block; }
+
+    /* ══════════════════════════════════ SHEET PANEL ══ */
+    .sheet-panel {
+      background: #fff; border-radius: 28px; max-width: 560px;
+      margin: 0 auto; overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,.22);
+      animation: popIn .28s cubic-bezier(.34,1.56,.64,1);
+    }
+
+    /* banner */
+    .sp-banner {
+      padding: 20px 20px 16px;
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+    }
+    .sp-left       { display: flex; align-items: center; gap: 14px; }
+    .sp-emoji      { font-size: 42px; line-height: 1; animation: floatSlow 3s ease-in-out infinite; flex-shrink: 0; }
+    .sp-num        { font-size: 11px; font-weight: 800; color: rgba(255,255,255,.72); text-transform: uppercase; letter-spacing: 1.2px; }
+    .sp-title      { font-size: 20px; font-weight: 900; color: #fff; margin: 3px 0 7px; line-height: 1.2; text-shadow: 1px 1px 3px rgba(0,0,0,.12); }
+    .sp-meta       { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
+    .sp-badge      { font-size: 11px; font-weight: 800; padding: 4px 11px; border-radius: 20px; background: rgba(255,255,255,.92); text-transform: uppercase; }
+    .sp-age        { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.85); }
+
+    .close-btn {
+      background: rgba(255,255,255,.22); border: none; border-radius: 50%;
+      width: 38px; height: 38px; font-size: 22px; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      color: #fff; flex-shrink: 0; transition: background .15s, transform .15s; line-height: 1;
+    }
+    .close-btn:hover { background: rgba(255,255,255,.38); transform: scale(1.1) rotate(90deg); }
+
+    /* body */
+    .sp-body { padding: 20px 22px 26px; }
+
+    /* ══════════════════════════════════ PROGRESS ══ */
+    .q-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 10px;
+    }
+    .q-counter { font-size: 12px; font-weight: 800; color: #aaa; text-transform: uppercase; letter-spacing: .8px; }
+
+
+    .dots { display: flex; gap: 9px; margin-bottom: 18px; }
+    .dot  { width: 14px; height: 14px; border-radius: 50%; background: #e0e0e0; transition: background .3s, transform .2s; }
+    .dot.done    { background: #22c55e; }
+    .dot.current { background: #1a1a1a; animation: pulseDot 1.2s ease-in-out infinite; }
+
+    /* ══════════════════════════════════ QUESTION BOX ══ */
+    .q-box {
+      background: #FFFBEF; border-radius: 18px; border: 3px solid #FFD93D;
+      padding: 22px 20px; margin-bottom: 14px; min-height: 114px;
+      display: flex; align-items: center; position: relative;
+    }
+    .q-box::after {
+      content: '⭐'; position: absolute; top: -12px; right: 14px;
+      font-size: 22px; animation: wiggle 3s ease-in-out infinite;
+    }
+    .q-text { font-size: 21px; font-weight: 800; line-height: 1.55; color: #1a1a1a; }
+
+    /* ══════════════════════════════════ ANSWER BOX ══ */
+    .a-box {
+      background: #f6f8fa; border-radius: 18px; border: 3px solid #e0e0e0;
+      padding: 18px 20px; margin-bottom: 16px; min-height: 76px;
+      display: flex; align-items: center;
+      transition: border-color .35s, background .35s;
+    }
+    .a-box.revealed { background: #F0FFF4; border-color: #22C55E; }
+    .a-placeholder  { font-size: 15px; color: #ccc; font-style: italic; font-weight: 600; }
+    .a-text         { font-size: 21px; font-weight: 900; color: #16a34a; line-height: 1.5; display: none; }
+    .a-text.show    { display: block; animation: slideDown .3s ease; }
+
+    /* ══════════════════════════════════ BUTTONS ══ */
+    .btn {
+      display: block; width: 100%; padding: 15px 20px; border-radius: 50px;
+      border: none; font-size: 17px; font-weight: 900; cursor: pointer;
+      margin-bottom: 10px; font-family: inherit; text-align: center;
+      letter-spacing: .2px;
+      transition: transform .12s cubic-bezier(.34,1.56,.64,1), box-shadow .12s;
+    }
+    .btn:active { transform: scale(.96) translateY(2px) !important; box-shadow: none !important; }
+
+    .btn-show {
+      background: linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%);
+      color: #fff; box-shadow: 0 5px 0 #c94e10;
+      text-shadow: 1px 1px 2px rgba(0,0,0,.15);
+      /* glow pulse keeps the button stationary so taps always register */
+      animation: glowPulse 1.6s ease-in-out infinite;
+      font-size: 19px;
+    }
+    .btn-show:hover  { animation: none; transform: translateY(-3px); box-shadow: 0 8px 0 #c94e10; }
+    .btn-show:active { animation: none; }
+
+    .btn-next {
+      background: linear-gradient(135deg, #22C55E 0%, #06B6D4 100%);
+      color: #fff; box-shadow: 0 5px 0 #15803d;
+      text-shadow: 1px 1px 2px rgba(0,0,0,.12);
+    }
+    .btn-next:hover  { transform: translateY(-3px); box-shadow: 0 8px 0 #15803d; }
+    .btn-next:active { transform: translateY(2px);  box-shadow: none; }
+
+    .btn-reset {
+      background: transparent; border: 2.5px solid #e0e0e0;
+      color: #bbb; font-size: 14px; padding: 11px 16px;
+    }
+    .btn-reset:hover { border-color: #ccc; color: #999; transform: translateY(-1px); }
+
+    .btn-back {
+      background: transparent; border: 2.5px solid #e0e0e0;
+      color: #aaa; font-size: 14px; padding: 11px 16px; margin-top: 4px;
+    }
+    .btn-back:hover { border-color: #ccc; color: #888; }
+
+    .btn-play {
+      background: linear-gradient(135deg, #22C55E 0%, #06B6D4 100%);
+      color: #fff; box-shadow: 0 5px 0 #15803d;
+      text-shadow: 1px 1px 2px rgba(0,0,0,.12);
+    }
+    .btn-play:hover { transform: translateY(-3px); box-shadow: 0 8px 0 #15803d; }
+
+    .btn-again {
+      background: linear-gradient(135deg, #A855F7 0%, #EC4899 100%);
+      color: #fff; box-shadow: 0 5px 0 #7e22ce;
+      text-shadow: 1px 1px 2px rgba(0,0,0,.12);
+      max-width: 340px; margin: 0 auto 12px;
+    }
+    .btn-again:hover { transform: translateY(-3px); box-shadow: 0 8px 0 #7e22ce; }
+
+    /* ══════════════════════════════════ COMPLETION ══ */
+    .completion { text-align: center; padding: 14px 4px 10px; }
+    .comp-stars  { font-size: 34px; margin-bottom: 6px; letter-spacing: 6px; animation: starPop .5s ease both; }
+    .comp-trophy { font-size: 80px; display: block; margin: 0 auto 10px; animation: float 2.2s ease-in-out infinite; line-height: 1; }
+    .comp-title  {
+      font-size: 34px; font-weight: 900; margin-bottom: 6px;
+      background: linear-gradient(135deg,#FF6B6B,#FFD93D,#22C55E,#6BCFFF,#A855F7);
+      background-size: 300% 300%; animation: rainbowBg 4s ease infinite;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .comp-score-block {
+      font-size: 22px; font-weight: 900; margin: 10px 0 6px;
+      color: #1a1a1a;
+    }
+    .comp-score-stars { font-size: 28px; letter-spacing: 4px; margin-bottom: 6px; }
+    .comp-msg        { font-size: 15px; color: #666; margin-bottom: 24px; line-height: 1.6; font-weight: 600; }
+
+    .confetti-strip { display: flex; justify-content: center; gap: 7px; flex-wrap: wrap; margin-bottom: 20px; }
+    .confetti-strip span {
+      display: inline-block; border-radius: 4px;
+      animation: confettiFall 1.8s ease-in-out infinite;
+    }
+
+    /* ══════════════════════════════════ QUIZ MAKER ══ */
+    .qm-intro { font-size: 15px; color: #777; margin-bottom: 16px; line-height: 1.6; font-weight: 600; }
+
+    .qm-block   { border-radius: 16px; padding: 14px 16px; margin-bottom: 11px; border: 3px solid transparent; }
+    .qm-label   { font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .8px; margin-bottom: 9px; }
+
+    .qm-input {
+      width: 100%; border: 2.5px solid rgba(255,255,255,.5); border-radius: 12px;
+      padding: 11px 14px; font-size: 15px; font-family: inherit; font-weight: 700;
+      color: #1a1a1a; background: rgba(255,255,255,.9); outline: none;
+      transition: border-color .2s, background .2s; margin-bottom: 9px;
+    }
+    .qm-input:last-child { margin-bottom: 0; }
+    .qm-input:focus      { border-color: rgba(255,255,255,1); background: #fff; }
+    .qm-input::placeholder { color: #bbb; font-weight: 500; }
+
+    /* validation error */
+    .qm-error {
+      background: #FFF0F0; border: 2px solid #FF6B6B; border-radius: 12px;
+      padding: 12px 16px; margin-bottom: 12px; color: #c00; font-weight: 700; font-size: 14px;
+      animation: shake .3s ease;
+      display: none;
+    }
+
+    /* ── Answer attempt input ── */
+    .attempt-wrap {
+      margin-bottom: 14px;
+    }
+    .attempt-label {
+      font-size: 13px; font-weight: 800; color: #888;
+      text-transform: uppercase; letter-spacing: .6px;
+      margin-bottom: 7px; display: block;
+    }
+    .attempt-input {
+      width: 100%; border: 3px solid #e0e0e0; border-radius: 16px;
+      padding: 14px 18px; font-size: 19px; font-family: inherit;
+      font-weight: 700; color: #1a1a1a; background: #fff; outline: none;
+      transition: border-color .2s, background .2s;
+    }
+    .attempt-input:focus { border-color: #FFD93D; background: #FFFBEF; }
+    .attempt-input::placeholder { color: #ccc; font-weight: 500; font-size: 16px; }
+    .attempt-input:disabled { background: #f6f8fa; color: #888; border-color: #e0e0e0; }
+
+    /* Your answer strip shown after reveal */
+    .your-answer-strip {
+      font-size: 13px; font-weight: 700; color: #aaa;
+      margin-bottom: 8px; padding: 0 4px;
+      display: none;
+    }
+    .your-answer-strip span { color: #555; }
+
+    /* keyboard hint */
+    .kb-hint {
+      text-align: center; font-size: 12px; color: #ccc; margin-top: 6px;
+      font-weight: 600;
+    }
+    kbd {
+      background: #f0f0f0; border: 1px solid #ddd; border-radius: 4px;
+      padding: 1px 5px; font-size: 11px; color: #888; font-family: inherit;
+    }
+
+    /* ══════════════════════════════════ PRINT ══ */
+    @media print {
+      body        { background: #fff !important; }
+      #site-header, #home { display: none !important; }
+      #overlay {
+        display: block !important; position: static !important;
+        background: none !important; padding: 0 !important; backdrop-filter: none !important;
+      }
+      .sheet-panel { border-radius: 0 !important; box-shadow: none !important; max-width: 100% !important; animation: none !important; }
+      .sp-banner   { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .close-btn, .btn-reset, .btn-back, .btn-show, .btn-play,
+      .score-row, .btn-again, .kb-hint, #sound-btn { display: none !important; }
+    }
+
+    /* ══════════════════════════════════ RESPONSIVE ══ */
+    @media (max-width: 500px) {
+      .header-title { font-size: 25px; }
+      .sp-body      { padding: 16px 16px 22px; }
+      .q-text       { font-size: 18px; }
+      .a-text       { font-size: 18px; }
+      .comp-title   { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ ADMIN PAGE ══ -->
+<div id="admin-page">
+  <div class="admin-card">
+    <h2>🔐 Admin Panel</h2>
+    <p class="admin-sub">Enter the admin password to view visitors.</p>
+    <input class="admin-input" id="admin-pass" type="password"
+           placeholder="Password…"
+           onkeydown="if(event.key==='Enter') checkAdmin()" />
+    <button class="admin-login-btn" onclick="checkAdmin()">Login</button>
+    <div class="admin-err" id="admin-err">❌ Incorrect password.</div>
+    <div class="visitor-list" id="visitor-list" style="display:none">
+      <h3>👥 Visitors</h3>
+      <div id="visitor-entries"></div>
+      <button class="admin-clear-btn" onclick="clearVisitors()">🗑 Clear all visitors</button>
+    </div>
+    <button class="admin-back-btn" onclick="backToSignin()">← Back to sign-in</button>
+  </div>
+</div>
+
+<!-- ══ NAME GATE ══ -->
+<div id="pw-gate">
+  <div class="pw-card">
+    <span class="pw-emoji">👋</span>
+    <div class="pw-title">Welcome to Math Scavenger Hunt!</div>
+    <div class="pw-sub">What is your name? Type it below to start! 🎉</div>
+    <input type="text" id="pw-input" class="pw-input"
+           placeholder="Your name here…"
+           maxlength="30" autocomplete="off" autocapitalize="words"
+           onkeydown="if(event.key==='Enter') checkPassword()" />
+    <button class="pw-btn" onclick="checkPassword()">🚀 Let's Go!</button>
+    <div class="pw-error" id="pw-error"></div>
+    <span class="admin-link" onclick="showAdminLogin()">Admin access</span>
+  </div>
+</div>
+
+<!-- ══ HEADER ══ -->
+<header id="site-header">
+  <div class="header-deco" style="width:80px;height:80px;background:#fff;top:-30px;left:-20px;animation-delay:.4s"></div>
+  <div class="header-deco" style="width:50px;height:50px;background:#FFD93D;bottom:-15px;right:40px;animation-delay:1.2s"></div>
+  <div class="header-deco" style="width:35px;height:35px;background:#A78BFA;top:10px;right:80px;animation-delay:.7s"></div>
+  <button id="sound-btn" onclick="toggleSound()" title="Toggle sound">🔇</button>
+  <span id="admin-header-link" onclick="showAdminLogin()">Admin</span>
+  <div class="header-title">🔢 Math Scavenger Hunt!</div>
+  <div class="header-sub">✨ 10 fun sheets for kids aged 4–12 &nbsp;·&nbsp; Tap a sheet to start! ✨</div>
+  <div id="welcome-name"></div>
+</header>
+
+<!-- ══ HOME ══ -->
+<div id="home">
+  <div class="home-intro">
+    <h2>🎯 Pick your Math Challenge!</h2>
+    <p>Answer questions one at a time — tap <strong>Show Answer</strong> when you&rsquo;re ready! 💡</p>
+  </div>
+  <div class="home-progress">
+    <div class="home-progress-label" id="progress-label">0 of 10 sheets completed</div>
+    <div class="home-progress-bar-wrap">
+      <div class="home-progress-bar" id="progress-bar" style="width:0%"></div>
+    </div>
+  </div>
+  <div class="grid" id="card-grid"></div>
+</div>
+
+<!-- ══ OVERLAY ══ -->
+<div id="overlay">
+  <div class="sheet-panel" id="sheet-panel"></div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   SHEET DATA
+═══════════════════════════════════════════ */
+const sheets = [
+  {
+    id:1, title:"Counting to 10", age:"Ages 4–6", difficulty:"Easy", diffClass:"easy",
+    emoji:"🍎", color:"linear-gradient(135deg,#FF6B6B,#FF8E53)", shadow:"#c94a2a", badgeColor:"#FF6B6B",
+    questions:[
+      { q:"Count the apples:\n🍎 🍎 🍎 🍎\nHow many are there?",           a:"4 apples 🍎" },
+      { q:"How many fingers do you have on ONE hand? 🖐️",                   a:"5 fingers ✋" },
+      { q:"Count the stars:\n⭐ ⭐ ⭐ ⭐ ⭐ ⭐ ⭐\nHow many stars?",         a:"7 stars ⭐" },
+      { q:"What number comes just BEFORE 8?",                                a:"7" },
+      { q:"Count from 1 to 10.\nWhat is the very LAST number?",              a:"10 🎉" },
+    ]
+  },
+  {
+    id:2, title:"Addition & Subtraction", age:"Ages 5–8", difficulty:"Easy", diffClass:"easy",
+    emoji:"➕", color:"linear-gradient(135deg,#45B7D1,#4ECDC4)", shadow:"#2a8fa8", badgeColor:"#2a8fa8",
+    questions:[
+      { q:"3 + 4 = ?",  a:"7" },
+      { q:"8 − 3 = ?",  a:"5" },
+      { q:"5 + 6 = ?",  a:"11" },
+      { q:"10 − 4 = ?", a:"6" },
+      { q:"7 + 5 = ?",  a:"12" },
+    ]
+  },
+  {
+    id:3, title:"Multiplication", age:"Ages 7–9", difficulty:"Medium", diffClass:"medium",
+    emoji:"✖️", color:"linear-gradient(135deg,#A855F7,#9333EA)", shadow:"#6b21a8", badgeColor:"#7e22ce",
+    questions:[
+      { q:"3 × 4 = ?",  a:"12" },
+      { q:"5 × 5 = ?",  a:"25" },
+      { q:"7 × 3 = ?",  a:"21" },
+      { q:"6 × 4 = ?",  a:"24" },
+      { q:"8 × 7 = ?",  a:"56" },
+    ]
+  },
+  {
+    id:4, title:"Division", age:"Ages 7–9", difficulty:"Medium", diffClass:"medium",
+    emoji:"➗", color:"linear-gradient(135deg,#22C55E,#16A34A)", shadow:"#15803d", badgeColor:"#15803d",
+    questions:[
+      { q:"12 ÷ 3 = ?",  a:"4" },
+      { q:"20 ÷ 4 = ?",  a:"5" },
+      { q:"15 ÷ 5 = ?",  a:"3" },
+      { q:"24 ÷ 6 = ?",  a:"4" },
+      { q:"36 ÷ 9 = ?",  a:"4" },
+    ]
+  },
+  {
+    id:5, title:"Fractions A", age:"Ages 8–10", difficulty:"Medium", diffClass:"medium",
+    emoji:"🍕", color:"linear-gradient(135deg,#EC4899,#F472B6)", shadow:"#be185d", badgeColor:"#be185d",
+    questions:[
+      { q:"What is HALF (½) of 10?",
+        a:"5" },
+      { q:"A pizza 🍕 is cut into 4 equal slices.\nYou eat 1 slice.\nWhat fraction did you eat?",
+        a:"¼  (one quarter)" },
+      { q:"What is ¼ of 8?",
+        a:"2" },
+      { q:"Which fraction is bigger:\n½  or  ¼ ?",
+        a:"½  (one half)" },
+      { q:"What is ¾ of 12?",
+        a:"9" },
+    ]
+  },
+  {
+    id:6, title:"Fractions B", age:"Ages 9–11", difficulty:"Hard", diffClass:"hard",
+    emoji:"🔢", color:"linear-gradient(135deg,#F97316,#EF4444)", shadow:"#b91c1c", badgeColor:"#b91c1c",
+    questions:[
+      { q:"What is ⅔ of 18?",
+        a:"12" },
+      { q:"½ + ¼ = ?",
+        a:"¾  (three quarters)" },
+      { q:"Which fraction is closest to 1?\n  A) ¾\n  B) ⅔\n  C) ½",
+        a:"A) ¾  (three quarters)" },
+      { q:"⅚ − ⅓ = ?",
+        a:"½  (one half)\n⅓ = 2⁄6, so 5⁄6 − 2⁄6 = 3⁄6 = ½" },
+      { q:"You eat 3⁄8 of a pizza 🍕.\nYour friend eats 2⁄8.\nHow much pizza is LEFT?",
+        a:"3⁄8 is left\n(8⁄8 − 3⁄8 − 2⁄8 = 3⁄8)" },
+    ]
+  },
+  {
+    id:7, title:"Measurement & Capacity", age:"Ages 8–11", difficulty:"Medium", diffClass:"medium",
+    emoji:"📏", color:"linear-gradient(135deg,#14B8A6,#06B6D4)", shadow:"#0e7490", badgeColor:"#0e7490",
+    questions:[
+      { q:"How many centimetres (cm)\nare in 1 metre (m)?",
+        a:"100 cm" },
+      { q:"A bottle holds 500 ml 🍶.\nHow many bottles fill a 1-litre jug?",
+        a:"2 bottles" },
+      { q:"How many minutes are in 1 hour? ⏰",
+        a:"60 minutes" },
+      { q:"A ruler 📏 is 30 cm long.\nHow long are TWO rulers placed end to end?",
+        a:"60 cm" },
+      { q:"Which is heavier:\n1 kg of feathers 🪶  OR  1 kg of rocks 🪨?",
+        a:"They weigh exactly the SAME! 😄\nBoth are 1 kg." },
+    ]
+  },
+  {
+    id:8, title:"Money", age:"Ages 7–10", difficulty:"Medium", diffClass:"medium",
+    emoji:"💰", color:"linear-gradient(135deg,#EAB308,#F59E0B)", shadow:"#a16207", badgeColor:"#92400e",
+    questions:[
+      { q:"You have RM 5.00 💰.\nYou spend RM 2.50.\nHow much money is left?",
+        a:"RM 2.50" },
+      { q:"A pencil ✏️ costs RM 1.20.\nYou pay with RM 2.00.\nWhat is your change?",
+        a:"RM 0.80" },
+      { q:"3 sweets 🍬 cost RM 0.90 altogether.\nHow much does 1 sweet cost?",
+        a:"RM 0.30" },
+      { q:"You save RM 3.00 every week.\nHow much do you save in 4 weeks? 🗓️",
+        a:"RM 12.00" },
+      { q:"A book 📚 costs RM 8.50\nand a ruler costs RM 1.50.\nHow much together?",
+        a:"RM 10.00" },
+    ]
+  },
+  {
+    id:9, title:"Statistics", age:"Ages 9–12", difficulty:"Hard", diffClass:"hard",
+    emoji:"📊", color:"linear-gradient(135deg,#6366F1,#8B5CF6)", shadow:"#4338ca", badgeColor:"#4338ca",
+    questions:[
+      { q:"Find the AVERAGE (mean) of:\n4, 6, 8, 10",
+        a:"7\n(4+6+8+10 = 28,  then 28 ÷ 4 = 7)" },
+      { q:"What is the MODE of:\n3, 5, 3, 7, 3, 9?",
+        a:"3\n(Mode = the number that appears most often)" },
+      { q:"What is the MEDIAN of:\n2, 5, 7, 9, 11?",
+        a:"7\n(Median = the middle value when sorted)" },
+      { q:"A bar chart 📊 shows:\nRed = 8 · Blue = 5 · Green = 3\nWhich colour is MOST popular?",
+        a:"Red 🔴  (8 votes)" },
+      { q:"What is the RANGE of:\n15, 7, 23, 11, 19?",
+        a:"16\n(Range = Highest − Lowest = 23 − 7 = 16)" },
+    ]
+  },
+  {
+    id:10, title:"Make Your Own Quiz", age:"All ages", difficulty:"Open", diffClass:"open",
+    emoji:"✏️", color:"linear-gradient(135deg,#E879F9,#A855F7,#818CF8)", shadow:"#7e22ce", badgeColor:"#7e22ce",
+    quizMaker: true,
+    qmColors:["#FF6B6B","#22C55E","#EAB308","#45B7D1","#A855F7"],
+  },
+];
+
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+let currentSheet  = null;
+let currentQ      = 0;
+let sheet10Mode   = 'edit';   // 'edit' | 'play'
+let soundEnabled  = false;
+
+/* ═══════════════════════════════════════════
+   PERSISTENCE (localStorage)
+═══════════════════════════════════════════ */
+function loadCompleted() {
+  try { return JSON.parse(localStorage.getItem('msh_done') || '{}'); } catch(e) { return {}; }
+}
+function saveCompleted(idx) {
+  const d = loadCompleted();
+  d[idx] = { done: true };
+  try { localStorage.setItem('msh_done', JSON.stringify(d)); } catch(e) {}
+}
+
+function loadCustomQs() {
+  try {
+    const v = JSON.parse(localStorage.getItem('msh_custom') || 'null');
+    if (v && Array.isArray(v)) return v;
+  } catch(e) {}
+  return Array(5).fill(null).map(() => ({ q:'', a:'' }));
+}
+function saveCustomQs(qs) {
+  try { localStorage.setItem('msh_custom', JSON.stringify(qs)); } catch(e) {}
+}
+
+/* ═══════════════════════════════════════════
+   SOUND (Web Audio API — off by default)
+═══════════════════════════════════════════ */
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  document.getElementById('sound-btn').textContent = soundEnabled ? '🔊' : '🔇';
+}
+
+function playTone(type) {
+  if (!soundEnabled) return;
+  try {
+    const C = new (window.AudioContext || window.webkitAudioContext)();
+    const play = (freq, start, dur, vol=0.25, shape='sine') => {
+      const o = C.createOscillator(), g = C.createGain();
+      o.type = shape; o.frequency.value = freq;
+      g.gain.setValueAtTime(vol, C.currentTime + start);
+      g.gain.exponentialRampToValueAtTime(0.001, C.currentTime + start + dur);
+      o.connect(g); g.connect(C.destination);
+      o.start(C.currentTime + start); o.stop(C.currentTime + start + dur + 0.01);
+    };
+    if (type === 'reveal')  { play(523, 0, .18); }
+    if (type === 'correct') { play(659, 0, .12); play(784, .12, .18); }
+    if (type === 'missed')  { play(300, 0, .25, .15); }
+    if (type === 'complete'){ [523,659,784,1047].forEach((f,i)=>play(f,i*.13,.2)); }
+  } catch(e) {}
+}
+
+/* ═══════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════ */
+function esc(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\n/g,'<br>');
+}
+
+function scoreStars(sc, total) {
+  const pct = sc / total;
+  if (pct >= 1)   return { stars:'⭐⭐⭐⭐⭐', msg:'PERFECT SCORE! You&rsquo;re incredible! 🏆🚀' };
+  if (pct >= .8)  return { stars:'⭐⭐⭐⭐☆',  msg:'Almost perfect! Amazing work! 🌟🌟' };
+  if (pct >= .6)  return { stars:'⭐⭐⭐☆☆',  msg:'Good job! Keep practising! 💪' };
+  if (pct >= .4)  return { stars:'⭐⭐☆☆☆',   msg:'Nice try! You&rsquo;re getting there! 😊' };
+  return              { stars:'⭐☆☆☆☆',   msg:'Keep trying — you can do it! 🤗' };
+}
+
+/* ═══════════════════════════════════════════
+   HOME
+═══════════════════════════════════════════ */
+function renderHome() {
+  const done  = loadCompleted();
+  const count = Object.keys(done).length;
+  const pct   = Math.round(count / sheets.length * 100);
+
+  document.getElementById('progress-label').textContent =
+    count === sheets.length
+      ? '🏆 All 10 sheets completed! You\'re a Math Superstar!'
+      : `${count} of ${sheets.length} sheets completed`;
+  document.getElementById('progress-bar').style.width = pct + '%';
+
+  const grid = document.getElementById('card-grid');
+  grid.innerHTML = sheets.map((s, i) => {
+    const d     = done[i];
+    const badge = d
+      ? `<div class="card-done-badge" title="Completed!">🏆</div>`
+      : '';
+    return `
+      <div class="card" style="background:${s.color};animation-delay:${i*.04}s"
+           onclick="openSheet(${i})" role="button" tabindex="0"
+           onkeydown="if(event.key==='Enter')openSheet(${i})">
+        ${badge}
+        <div class="card-body">
+          <span class="card-emoji">${s.emoji}</span>
+          <div class="card-num">Sheet ${s.id}</div>
+          <div class="card-title">${s.title}</div>
+        </div>
+        <div class="card-footer">
+          <span class="badge" style="color:${s.badgeColor}">${s.difficulty}</span>
+          <span class="card-age">${s.age}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════
+   OPEN / CLOSE
+═══════════════════════════════════════════ */
+function openSheet(idx) {
+  currentSheet = idx;
+  currentQ     = 0;
+  if (sheets[idx].quizMaker) sheet10Mode = 'edit';
+  renderSheet();
+  document.getElementById('overlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSheet() {
+  document.getElementById('overlay').classList.remove('show');
+  document.body.style.overflow = '';
+  renderHome();
+}
+
+/* ═══════════════════════════════════════════
+   BANNER HTML
+═══════════════════════════════════════════ */
+function makeBanner(s) {
+  return `
+    <div class="sp-banner" style="background:${s.color}">
+      <div class="sp-left">
+        <div class="sp-emoji">${s.emoji}</div>
+        <div>
+          <div class="sp-num">Sheet ${s.id}</div>
+          <div class="sp-title">${s.title}</div>
+          <div class="sp-meta">
+            <span class="sp-badge" style="color:${s.badgeColor}">${s.difficulty}</span>
+            <span class="sp-age">${s.age}</span>
+          </div>
+        </div>
+      </div>
+      <button class="close-btn" onclick="closeSheet()" aria-label="Close">&times;</button>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════
+   RENDER SHEET
+═══════════════════════════════════════════ */
+function renderSheet() {
+  const s     = sheets[currentSheet];
+  const panel = document.getElementById('sheet-panel');
+
+  /* ── Sheet 10: Edit mode ── */
+  if (s.quizMaker && sheet10Mode === 'edit') {
+    renderQuizEdit(s, panel);
+    return;
+  }
+
+  /* ── Sheet 10: Play mode — use saved custom questions ── */
+  const questions = s.quizMaker
+    ? loadCustomQs().filter(x => x.q.trim() && x.a.trim())
+    : s.questions;
+
+  const q     = questions[currentQ];
+  const total = questions.length;
+
+  const dots = questions.map((_,i) => {
+    const cls = i < currentQ ? 'done' : i === currentQ ? 'current' : '';
+    return `<div class="dot ${cls}" title="Q${i+1}"></div>`;
+  }).join('');
+
+  panel.innerHTML = `
+    ${makeBanner(s)}
+    <div class="sp-body">
+      <div class="q-header">
+        <div class="q-counter">Question ${currentQ+1} of ${total}</div>
+      </div>
+      <div class="dots">${dots}</div>
+
+      <div class="q-box">
+        <div class="q-text">${esc(q.q)}</div>
+      </div>
+
+      <!-- Kid types their guess here -->
+      <div class="attempt-wrap" id="attempt-wrap">
+        <span class="attempt-label">✏️ Your answer:</span>
+        <input type="text" id="attempt-input" class="attempt-input"
+               placeholder="Type your answer here, then tap Check! 👇"
+               onkeydown="if(event.key==='Enter') showAnswer()" autocomplete="off" />
+      </div>
+
+      <!-- shown after reveal: "You wrote: X" -->
+      <div class="your-answer-strip" id="your-answer-strip">
+        You wrote: <span id="your-answer-text"></span>
+      </div>
+
+      <!-- Correct answer box -->
+      <div class="a-box" id="a-box">
+        <div class="a-placeholder" id="a-placeholder">✅ Correct answer appears here</div>
+        <div class="a-text"        id="a-text">${esc(q.a)}</div>
+      </div>
+
+      <button class="btn btn-show" id="btn-show" onclick="showAnswer()">
+        🔍 Check Answer!
+      </button>
+
+      <button class="btn btn-next" id="btn-next" style="display:none" onclick="nextQuestion()">
+        ${currentQ === total - 1 ? 'Finish! 🎉' : 'Next Question →'}
+      </button>
+
+      <button class="btn btn-reset" onclick="resetSheet()">↺ Reset</button>
+      ${s.quizMaker ? `<button class="btn btn-back" onclick="backToEdit()">← Edit Questions</button>` : ''}
+      <div class="kb-hint">Tip: press <kbd>Enter</kbd> to check · <kbd>Space</kbd> for next</div>
+    </div>`;
+
+  panel.scrollTop = 0;
+}
+
+/* ═══════════════════════════════════════════
+   SHEET 10 — EDIT MODE
+═══════════════════════════════════════════ */
+function renderQuizEdit(s, panel) {
+  const saved = loadCustomQs();
+  const colors = s.qmColors || ['#FF6B6B','#22C55E','#EAB308','#45B7D1','#A855F7'];
+
+  panel.innerHTML = `
+    ${makeBanner(s)}
+    <div class="sp-body">
+      <p class="qm-intro">📝 Write your own questions and answers below — then press <strong>Play!</strong> to quiz yourself or a friend!</p>
+      <div id="qm-error" class="qm-error">⚠️ Please fill in at least one question AND its answer before playing!</div>
+      ${[0,1,2,3,4].map(i => `
+        <div class="qm-block" style="background:${colors[i]}22;border-color:${colors[i]}55">
+          <div class="qm-label" style="color:${colors[i]}">Question ${i+1}</div>
+          <input class="qm-input" id="q${i}" type="text"
+                 placeholder="Write your question here… 🤔"
+                 value="${esc(saved[i] ? saved[i].q : '')}" />
+          <input class="qm-input" id="a${i}" type="text"
+                 placeholder="Write the answer here… ✅"
+                 value="${esc(saved[i] ? saved[i].a : '')}" />
+        </div>
+      `).join('')}
+      <button class="btn btn-play" onclick="playCustomQuiz()" style="margin-top:6px">▶ Play My Quiz! 🎮</button>
+      <button class="btn btn-back" onclick="closeSheet()">← Back to all sheets</button>
+    </div>`;
+  panel.scrollTop = 0;
+}
+
+function playCustomQuiz() {
+  const qs = [0,1,2,3,4].map(i => ({
+    q: document.getElementById('q'+i).value.trim(),
+    a: document.getElementById('a'+i).value.trim(),
+  }));
+
+  const valid = qs.filter(x => x.q && x.a);
+  if (!valid.length) {
+    const el = document.getElementById('qm-error');
+    el.style.display = 'block';
+    el.style.animation = 'none';
+    void el.offsetWidth;
+    el.style.animation = '';
+    return;
+  }
+
+  saveCustomQs(qs);
+  currentQ    = 0;
+  score       = 0;
+  sheet10Mode = 'play';
+  renderSheet();
+}
+
+function backToEdit() {
+  sheet10Mode = 'edit';
+  renderSheet();
+}
+
+/* ═══════════════════════════════════════════
+   INTERACTIONS
+═══════════════════════════════════════════ */
+function showAnswer() {
+  // lock and snapshot the attempt input
+  const inp = document.getElementById('attempt-input');
+  if (inp) {
+    inp.disabled = true;
+    const typed = inp.value.trim();
+    if (typed) {
+      document.getElementById('your-answer-text').textContent = typed;
+      document.getElementById('your-answer-strip').style.display = 'block';
+    }
+    document.getElementById('attempt-wrap').style.opacity = '.55';
+  }
+
+  document.getElementById('a-placeholder').style.display = 'none';
+  document.getElementById('a-text').classList.add('show');
+  document.getElementById('a-box').classList.add('revealed');
+  document.getElementById('btn-show').style.display = 'none';
+  document.getElementById('btn-next').style.display = 'block';
+  playTone('reveal');
+}
+
+function nextQuestion() {
+  const s         = sheets[currentSheet];
+  const questions = s.quizMaker
+    ? loadCustomQs().filter(x => x.q.trim() && x.a.trim())
+    : s.questions;
+
+  if (currentQ < questions.length - 1) {
+    currentQ++;
+    renderSheet();
+  } else {
+    showCompletion();
+  }
+}
+
+function showCompletion() {
+  const s     = sheets[currentSheet];
+  playTone('complete');
+  saveCompleted(currentSheet);
+
+  const panel          = document.getElementById('sheet-panel');
+  const confettiColors = ['#FF6B6B','#FFD93D','#22C55E','#45B7D1','#A855F7','#EC4899','#F97316'];
+  const confetti = confettiColors.map((c,i) => `
+    <span style="width:${10+i%4*4}px;height:${10+i%3*4}px;background:${c};
+                 border-radius:${i%2?'50%':'3px'};
+                 animation-delay:${i*.24}s;animation-duration:${1.4+i*.15}s"></span>`
+  ).join('');
+
+  panel.innerHTML = `
+    ${makeBanner(s)}
+    <div class="sp-body">
+      <div class="completion">
+        <div class="confetti-strip">${confetti}</div>
+        <span class="comp-trophy">🏆</span>
+        <div class="comp-stars">⭐ ⭐ ⭐ ⭐ ⭐</div>
+        <div class="comp-title">WELL DONE!</div>
+        <div class="comp-msg">
+          You finished <strong>${s.title}</strong>!<br>
+          You&rsquo;re a <strong>Math Superstar</strong>! 🌟🚀
+        </div>
+        <button class="btn btn-again" onclick="resetSheet()">↺ Play Again!</button>
+        ${s.quizMaker ? `<button class="btn btn-back" onclick="backToEdit()" style="max-width:340px;margin:0 auto 10px">← Edit Questions</button>` : ''}
+        <button class="btn btn-back" onclick="closeSheet()" style="max-width:340px;margin:0 auto">← Back to all sheets</button>
+      </div>
+    </div>`;
+  panel.scrollTop = 0;
+}
+
+function resetSheet() {
+  currentQ    = 0;
+  sheet10Mode = sheets[currentSheet].quizMaker ? 'play' : undefined;
+  renderSheet();
+}
+
+/* ═══════════════════════════════════════════
+   KEYBOARD SHORTCUTS
+═══════════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeSheet(); return; }
+
+  if (!document.getElementById('overlay').classList.contains('show')) return;
+
+  const isInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
+
+  // Enter inside the attempt input → check answer
+  if (isInput && e.key === 'Enter') {
+    e.preventDefault();
+    const btnShow = document.getElementById('btn-show');
+    if (btnShow && btnShow.style.display !== 'none') showAnswer();
+    return;
+  }
+
+  if (isInput) return;
+
+  if (e.key === ' ') {
+    e.preventDefault();
+    const btnShow = document.getElementById('btn-show');
+    const btnNext = document.getElementById('btn-next');
+    if (btnShow && btnShow.style.display !== 'none') showAnswer();
+    else if (btnNext && btnNext.style.display !== 'none') nextQuestion();
+  }
+});
+
+/* ═══════════════════════════════════════════
+   CLOSE ON BACKDROP CLICK
+═══════════════════════════════════════════ */
+document.getElementById('overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('overlay')) closeSheet();
+});
+
+/* ═══════════════════════════════════════════
+   ADMIN
+═══════════════════════════════════════════ */
+const ADMIN_PASSWORD = '365278@feynmanowner';
+
+function showAdminLogin() {
+  document.getElementById('pw-gate').style.display    = 'none';
+  document.getElementById('admin-page').classList.add('show');
+  document.getElementById('admin-pass').value         = '';
+  document.getElementById('admin-err').style.display  = 'none';
+  document.getElementById('visitor-list').style.display = 'none';
+  setTimeout(() => document.getElementById('admin-pass').focus(), 50);
+}
+
+function checkAdmin() {
+  const pass = document.getElementById('admin-pass').value;
+  if (pass === ADMIN_PASSWORD) {
+    document.getElementById('admin-err').style.display  = 'none';
+    document.getElementById('visitor-list').style.display = 'block';
+    renderVisitorList();
+  } else {
+    document.getElementById('admin-err').style.display = 'block';
+    document.getElementById('admin-pass').value = '';
+    document.getElementById('admin-pass').focus();
+  }
+}
+
+function backToSignin() {
+  document.getElementById('admin-page').classList.remove('show');
+  // return to name gate only if not already signed in
+  try {
+    if (!sessionStorage.getItem('msh_name')) {
+      document.getElementById('pw-gate').style.display = 'flex';
+    }
+  } catch(e) {}
+}
+
+function getVisitors() {
+  try { return JSON.parse(localStorage.getItem('msh_visitors') || '[]'); } catch(e) { return []; }
+}
+function logVisitor(name) {
+  const list = getVisitors();
+  list.push({ name, time: new Date().toLocaleString('en-MY') });
+  try { localStorage.setItem('msh_visitors', JSON.stringify(list)); } catch(e) {}
+}
+function clearVisitors() {
+  if (confirm('Clear all visitor records?')) {
+    try { localStorage.removeItem('msh_visitors'); } catch(e) {}
+    renderVisitorList();
+  }
+}
+function renderVisitorList() {
+  const visitors = getVisitors();
+  const el = document.getElementById('visitor-entries');
+  if (!visitors.length) {
+    el.innerHTML = '<div class="visitor-empty">No visitors yet.</div>';
+    return;
+  }
+  el.innerHTML = [...visitors].reverse().map(v => `
+    <div class="visitor-item">
+      <span class="visitor-name">${v.name}</span>
+      <span class="visitor-time">${v.time}</span>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════
+   NAME GATE
+═══════════════════════════════════════════ */
+function checkPassword() {
+  const inp  = document.getElementById('pw-input');
+  const err  = document.getElementById('pw-error');
+  const name = inp.value.trim();
+
+  if (name.length < 2) {
+    err.textContent = '✏️ Please type your name (at least 2 letters)!';
+    inp.classList.remove('error');
+    void inp.offsetWidth;
+    inp.classList.add('error');
+    inp.focus();
+    return;
+  }
+
+  try { sessionStorage.setItem('msh_name', name); } catch(e) {}
+  logVisitor(name);
+  showWelcome(name);
+  document.getElementById('pw-gate').style.display = 'none';
+}
+
+function showWelcome(name) {
+  const el = document.getElementById('welcome-name');
+  if (el) el.textContent = '👤 Playing: ' + name;
+}
+
+// restore name on reload so kids don't re-enter every refresh
+(function() {
+  try {
+    const saved = sessionStorage.getItem('msh_name');
+    if (saved) {
+      document.getElementById('pw-gate').style.display = 'none';
+      showWelcome(saved);
+    } else {
+      document.getElementById('pw-input').focus();
+    }
+  } catch(e) {}
+})();
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+renderHome();
+</script>
+</body>
+</html>
